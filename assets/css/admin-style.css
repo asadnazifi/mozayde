@@ -1,0 +1,12 @@
+.fom_group_data_moza{
+    display: block;
+    width: 50%;
+    float: right;
+    padding: 20px;
+}
+.column-taxonomy-quality{
+    width: 20%;
+}
+.column-vendor_bids{
+    width: 20%;
+}

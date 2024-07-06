@@ -1,0 +1,80 @@
+/*style form form content*/
+.fom_group_data_moza{
+    display: none;
+    float:right;
+    padding: 50px;
+}
+.form_create_moza{
+    padding: 20px;
+}
+.form_create_moza label{
+    color: #aa3e4c;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+.form_create_moza button{
+    width: 100%;
+    background-color: #2a3f54;
+    color: white;
+    text-align: center;
+    margin-top: 50px;
+}
+/* استایل برای دکمه روشن/خاموش */
+.toggle-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 60px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+/* استایل برای دکمه در حالت خاموش */
+.toggle-button::after {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    transition: left 0.3s;
+}
+
+/* استایل برای دکمه در حالت روشن */
+.toggle-button:checked {
+    background-color: #4CAF50;
+}
+
+.toggle-button:checked::after {
+    left: 31px;
+}
+.sent_request_button{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.sent_request{
+    display: none;
+}
+.time_moza{
+    margin-top: 30px;
+}
+.time_moza span{
+    float: left;
+    margin-left: 13px;
+}
+.price_moza span{
+    float: left;
+    margin-left: 13px;
+    color: rgb(160, 35, 35);
+    font-weight: 900;
+    font-size: 20px;
+}
