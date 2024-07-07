@@ -58,7 +58,7 @@ $end_time = isset($metabox_product['end_time_moza'][0]) ? $metabox_product['end_
         <div class="aution">
             <label for="start_price">شروع قیمت</label>
             <input type="number" placeholder="قیمت شروع معامله تومان" name="start_price" id="start_price"
-                value="<?php echo esc_attr($start_price); ?>">
+                value="<?php echo esc_attr($start_price); ?>" required>
             <label for="set_price">قیمت رزرو</label>
             <input type="number" name="set_price" placeholder="قیمت رزور ایتم تومان" id="set_price"
                 value="<?php echo esc_attr($set_price); ?>">

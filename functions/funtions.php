@@ -171,6 +171,7 @@ function save_bid()
                 ];
                 update_post_meta($product_id, 'bids', $current_bids);
                 update_post_meta($product_id, 'bids_user', $current_bids);
+                update_post_meta($product_id, 'start_price', $bid_amount);
                 // Update bids in post meta
                 wp_redirect("?save_bid=ok");
                 exit;
@@ -236,6 +237,9 @@ function save_bid()
                                                         update_post_meta($product_id, 'bids', $current_bids);
 
                                                     }
+                                                }else{
+                                                   
+                                                    wp_redirect("?price=low");
                                                 }
                                             }
                                         }
@@ -294,6 +298,8 @@ function save_bid()
 
 
                                 }
+                            }else{
+                                wp_redirect("?price=low");
                             }
 
                         }

@@ -65,7 +65,9 @@
     display: none;
 }
 .time_moza{
-    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .time_moza span{
     float: left;
@@ -77,4 +79,20 @@
     color: rgb(160, 35, 35);
     font-weight: 900;
     font-size: 20px;
+}
+.denger{
+    background-color: #aa3e4c;
+    color: white;
+    padding: 8px 20px;
+    margin: 10px;
+    text-align: center;
+
+}
+.sucsee{
+    background-color: #3eaa43;
+    color: white;
+    padding: 8px 20px;
+    margin: 10px;
+    text-align: center;
+
 }

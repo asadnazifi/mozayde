@@ -45,18 +45,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const productTypeSelect = document.getElementById('product_type');
     const fromContentMoza = document.getElementById('fom_group_data_moza');
-    if (productTypeSelect.value === 'auction_product') {
-        fromContentMoza.style.display = 'block';
-    } else {
-        fromContentMoza.style.display = 'none';
-    }
-    productTypeSelect.addEventListener('change', function () {
+    const form_price = document.getElementsByClassName('dokan-price-container');
+
+    function updateDisplay() {
         if (productTypeSelect.value === 'auction_product') {
             fromContentMoza.style.display = 'block';
+            for (let i = 0; i < form_price.length; i++) {
+                form_price[i].style.display = "none";
+            }
         } else {
             fromContentMoza.style.display = 'none';
+            for (let i = 0; i < form_price.length; i++) {
+                form_price[i].style.display = "block";
+            }
         }
-    });
+    }
+
+    productTypeSelect.addEventListener('change', updateDisplay);
+
+    // به‌روزرسانی نمایش در بارگذاری اولیه
+    updateDisplay();
 
 });
 document.addEventListener('DOMContentLoaded', function () {
