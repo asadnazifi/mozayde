@@ -259,12 +259,7 @@ function save_bid()
 
                     if ($bid_amount >= $nex_bids) {
                         if ($bid_amount > $high_bids_user['bid_amount']) {
-                            $current_bids[] = [
-                                'user_id' => $high_bids_user['user_id'],
-                                'bid_amount' => $high_bids_user['bid_amount'],
-                                'timestamp' => current_time('mysql') // Optional: add timestamp
-                            ];
-                            update_post_meta($product_id, 'bids', $current_bids);
+
                             if ($bid_amount > $high_bids_user['bid_amount'] + $increase) {
                                 update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount'] + $increase);
                                 $current_bids[] = [
@@ -275,7 +270,7 @@ function save_bid()
                                 update_post_meta($product_id, 'high_bids', $current_bids);
                                 $current_bids[] = [
                                     'user_id' => $user_id,
-                                    'bid_amount' => $nex_bids,
+                                    'bid_amount' => $high_bids_user['bid_amount'] + $increase,
                                     'timestamp' => current_time('mysql') // Optional: add timestamp
                                 ];
                                 update_post_meta($product_id, 'bids', $current_bids);
@@ -283,6 +278,7 @@ function save_bid()
                                 wp_redirect(get_current_url());
 
                             } else {
+
                                 $current_bids[] = [
                                     'user_id' => $user_id,
                                     'bid_amount' => $bid_amount,
@@ -314,6 +310,12 @@ function save_bid()
                                 if ($high_bids_user['bid_amount'] >= $bid_amount + $increase) {
                                     update_post_meta($product_id, 'price_now', $bid_amount + $increase);
                                     $current_bids[] = [
+                                        'user_id' => $high_bids_user['user_id'],
+                                        'bid_amount' => $high_bids_user['bid_amount'],
+                                        'timestamp' => current_time('mysql') // Optional: add timestamp
+                                    ];
+                                    update_post_meta($product_id, 'bids', $nex_bids);
+                                    $current_bids[] = [
                                         'user_id' => $user_id,
                                         'bid_amount' => $bid_amount + $increase,
                                         'timestamp' => current_time('mysql') // Optional: add timestamp
@@ -321,14 +323,14 @@ function save_bid()
 
                                     update_post_meta($product_id, 'bids', $current_bids);
 
-                                    update_post_meta($product_id, 'price_now', $bid_amount + $increase);
+
+                                } else {
                                     $current_bids[] = [
                                         'user_id' => $high_bids_user['user_id'],
-                                        'bid_amount' => $bid_amount + $increase,
+                                        'bid_amount' => $bid_amount,
                                         'timestamp' => current_time('mysql') // Optional: add timestamp
                                     ];
-                                    update_post_meta($product_id, 'bids', $nex_bids);
-                                } else {
+                                    update_post_meta($product_id, 'bids', $current_bids);
                                     update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount']);
                                     $current_bids[] = [
                                         'user_id' => $user_id,
@@ -336,12 +338,7 @@ function save_bid()
                                         'timestamp' => current_time('mysql') // Optional: add timestamp
                                     ];
                                     update_post_meta($product_id, 'bids', $current_bids);
-                                    $current_bids[] = [
-                                        'user_id' => $high_bids_user['user_id'],
-                                        'bid_amount' => $bid_amount,
-                                        'timestamp' => current_time('mysql') // Optional: add timestamp
-                                    ];
-                                    update_post_meta($product_id, 'bids', $current_bids);
+
                                 }
                             }
 
