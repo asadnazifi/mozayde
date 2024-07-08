@@ -145,6 +145,44 @@ function findMaxBidAmount($bids)
     return ['user_id' => $userId, 'bid_amount' => $maxBid];
 }
 
+function set_alert_message_denger($message)
+{
+    session_start();
+
+    $_SESSION['alert_message_moza_denger'] = $message;
+}
+
+// نمایش پیام هشدار
+function display_alert_message_denger()
+{
+    if (isset($_SESSION['alert_message_moza_denger'])) {
+        echo '<div class="denger">' . $_SESSION['alert_message_moza_denger'] . '</div>';
+        unset($_SESSION['alert_message_moza_denger']);
+    }
+}
+
+function set_alert_message_sucsses($message)
+{
+    session_start();
+
+    $_SESSION['alert_message_moza_sucsses'] = $message;
+}
+
+// نمایش پیام هشدار
+function display_alert_message_sucsses()
+{
+    if (isset($_SESSION['alert_message_moza_sucsses'])) {
+        echo '<div class="sucsee">' . $_SESSION['alert_message_moza_sucsses'] . '</div>';
+        unset($_SESSION['alert_message_moza_sucsses']);
+    }
+}
+
+function get_current_url()
+{
+    global $wp;
+    return home_url(add_query_arg(array(), $wp->request));
+}
+
 function save_bid()
 {
 
@@ -170,143 +208,152 @@ function save_bid()
                     'timestamp' => current_time('mysql') // Optional: add timestamp
                 ];
                 update_post_meta($product_id, 'bids', $current_bids);
-                update_post_meta($product_id, 'bids_user', $current_bids);
-                update_post_meta($product_id, 'start_price', $bid_amount);
+                update_post_meta($product_id, 'high_bids', $current_bids);
+                update_post_meta($product_id, 'price_now', $start_price);
                 // Update bids in post meta
-                wp_redirect("?save_bid=ok");
-                exit;
+                $current_bids_user = get_post_meta($product_id, "high_bids", true);
+                $high_bids_user = findMaxBidAmount($current_bids_user);
+
+                set_alert_message_sucsses("پیشنهاد شما با مفقیت ثبت شد.بالاترین پیشنهاد شما   " . $high_bids_user['bid_amount'] . " است ");
+                wp_redirect(get_current_url());
             } else {
-                $current_bids_user = get_post_meta($product_id, "bids_user", true);
+                $current_bids_user = get_post_meta($product_id, "high_bids", true);
                 $current_bids = get_post_meta($product_id, "bids", true);
                 $increas = get_option('custom_price_ranges_options', []);
-                $high_bids = findMaxBidAmount($current_bids);
+
                 $high_bids_user = findMaxBidAmount($current_bids_user);
-                if ($bid_amount > $high_bids['bid_amount']) {
+                $price_now = get_post_meta($product_id, 'price_now', true);
+                if ($user_id == $high_bids_user['user_id']) {
+                    if ($bid_amount > $high_bids_user['bid_amount']) {
+                        $current_bids []= [
+                            'user_id' => $user_id,
+                            'bid_amount' => $bid_amount,
+                            'timestamp' => current_time('mysql') // Optional: add timestamp
+                        ];
+                        update_post_meta($product_id, 'high_bids', $current_bids);
+                        set_alert_message_sucsses("پیشنهاد شما با مفقیت افزایش یافت بالاترین پیشنهاد شما" . $bid_amount . " است");
+                        wp_redirect(get_current_url());
+                    } else {
+                        set_alert_message_denger("امکان کم کردن پیشنهاد وجود ندارد بالاترین پیشنها شما" . $high_bids_user['bid_amount'] . "است");
+                        wp_redirect(get_current_url());
+
+                    }
+                } else {
                     for ($i = 1; $i <= 12; $i++) {
                         $low_key = "low{$i}";
                         $high_key = "high{$i}";
                         $increase_key = "increase{$i}";
 
                         if (!empty($increas[$low_key]) && !empty($increas[$high_key]) && !empty($increas[$increase_key])) {
-                            $low = (int) $increas[$low_key];
-                            $high = (int) $increas[$high_key];
-                            $increase = (int) $increas[$increase_key];
+                            $low = (int)$increas[$low_key];
+                            $high = (int)$increas[$high_key];
+                            $increase = (int)$increas[$increase_key];
 
 
-                            if ($low <= $high_bids['bid_amount'] && $high_bids['bid_amount'] <= $high) {
-                                $nex_bids = $high_bids['bid_amount'] + $increase;
-
-                                if ($bid_amount > $nex_bids) {
-                                    if ($bid_amount < $high_bids_user['bid_amount']) {
-                                        $current_bids[] = [
-                                            'user_id' => $user_id,
-                                            'bid_amount' => $bid_amount,
-                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                        ];
-                                        update_post_meta($product_id, 'bids', $current_bids);
-                                    } else {
-                                        for ($i = 1; $i <= 12; $i++) {
-                                            $low_key = "low{$i}";
-                                            $high_key = "high{$i}";
-                                            $increase_key = "increase{$i}";
-
-                                            if (!empty($increas[$low_key]) && !empty($increas[$high_key]) && !empty($increas[$increase_key])) {
-                                                $low = (int) $increas[$low_key];
-                                                $high = (int) $increas[$high_key];
-                                                $increase = (int) $increas[$increase_key];
-
-
-                                                if ($low <= $high_bids['bid_amount'] && $high_bids['bid_amount'] <= $high) {
-                                                    $nex_bids_one = $high_bids_user['bid_amount'] + $increase;
-
-                                                    if ($bid_amount <= $nex_bids_one) {
-                                                        $nex_bids = $bid_amount;
-                                                        $current_bids[] = [
-                                                            'user_id' => $high_bids_user['user_id'],
-                                                            'bid_amount' => $high_bids_user['bid_amount'],
-                                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                                        ];
-                                                        update_post_meta($product_id, 'bids', $current_bids);
-                                                    } else {
-                                                        $nex_bids = $nex_bids_one;
-                                                        $current_bids[] = [
-                                                            'user_id' => $high_bids_user['user_id'],
-                                                            'bid_amount' => $high_bids_user['bid_amount'],
-                                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                                        ];
-                                                        update_post_meta($product_id, 'bids', $current_bids);
-
-                                                    }
-                                                }else{
-                                                   
-                                                    wp_redirect("?price=low");
-                                                }
-                                            }
-                                        }
-                                        $current_bids[] = [
-                                            'user_id' => $user_id,
-                                            'bid_amount' => $nex_bids,
-                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                        ];
-                                        update_post_meta($product_id, 'bids', $current_bids);
-                                        update_post_meta($product_id, 'start_price', $nex_bids);
-                                        $current_bids[] = [
-                                            'user_id' => $user_id,
-                                            'bid_amount' => $bid_amount,
-                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                        ];
-                                        update_post_meta($product_id, 'bids_user', $current_bids);
-
-                                    }
-
-
-                                    $high_bids_user = findMaxBidAmount($current_bids_user);
-                                    $high_bids = findMaxBidAmount($current_bids);
-                                    if ($high_bids_user['bid_amount'] > $bid_amount) {
-                                        for ($i = 1; $i <= 12; $i++) {
-                                            $low_key = "low{$i}";
-                                            $high_key = "high{$i}";
-                                            $increase_key = "increase{$i}";
-
-                                            if (!empty($increas[$low_key]) && !empty($increas[$high_key]) && !empty($increas[$increase_key])) {
-                                                $low = (int) $increas[$low_key];
-                                                $high = (int) $increas[$high_key];
-                                                $increase = (int) $increas[$increase_key];
-                                                $high_bids = findMaxBidAmount($current_bids);
-
-                                                if ($low <= $high_bids['bid_amount'] && $high_bids['bid_amount'] <= $high) {
-                                                    $nex_bids = $high_bids['bid_amount'] + $increase;
-                                                }
-                                            }
-                                        }
-                                        $current_bids[] = [
-                                            'user_id' => $high_bids_user['user_id'],
-                                            'bid_amount' => $nex_bids,
-                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                        ];
-                                        update_post_meta($product_id, 'bids', $current_bids);
-                                        update_post_meta($product_id, 'start_price', $nex_bids);
-
-                                    } else {
-                                        $current_bids[] = [
-                                            'user_id' => $user_id,
-                                            'bid_amount' => $bid_amount,
-                                            'timestamp' => current_time('mysql') // Optional: add timestamp
-                                        ];
-                                        update_post_meta($product_id, 'bids_user', $current_bids);
-                                    }
-
-
-                                }
-                            }else{
-                                wp_redirect("?price=low");
+                            if ($low <= $price_now && $price_now <= $high) {
+                                $nex_bids = $price_now + $increase;
                             }
-
                         }
                     }
 
-                } else {
-                    var_dump("پیشنهاد ارسالی کمتر از پینهاد های قبلی بوده");
+
+                    if ($bid_amount >= $nex_bids) {
+                        if ($bid_amount > $high_bids_user['bid_amount']) {
+                            $current_bids[] = [
+                                'user_id' => $high_bids_user['user_id'],
+                                'bid_amount' => $high_bids_user['bid_amount'],
+                                'timestamp' => current_time('mysql') // Optional: add timestamp
+                            ];
+                            update_post_meta($product_id, 'bids', $current_bids);
+                            if ($bid_amount > $high_bids_user['bid_amount'] + $increase) {
+                                update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount'] + $increase);
+                                $current_bids[] = [
+                                    'user_id' => $user_id,
+                                    'bid_amount' => $bid_amount,
+                                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                                ];
+                                update_post_meta($product_id, 'high_bids', $current_bids);
+                                $current_bids[] = [
+                                    'user_id' => $user_id,
+                                    'bid_amount' => $nex_bids,
+                                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                                ];
+                                update_post_meta($product_id, 'bids', $current_bids);
+                                set_alert_message_sucsses("پیشنهاد شما با مفقیت ثبت شد.بالاترین پیشنهاد شما   " . $bid_amount . " است ");
+                                wp_redirect(get_current_url());
+
+                            } else {
+                                $current_bids[] = [
+                                    'user_id' => $user_id,
+                                    'bid_amount' => $bid_amount,
+                                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                                ];
+                                update_post_meta($product_id, 'bids', $current_bids);
+                                update_post_meta($product_id, 'price_now', $bid_amount);
+
+                                set_alert_message_sucsses("پیشنهاد شما با مفقیت ثبت شد.بالاترین پیشنهاد شما   " . $bid_amount . " است ");
+                                wp_redirect(get_current_url());
+
+                            }
+                        } else {
+                            if ($bid_amount == $high_bids_user['bid_amount']) {
+                                update_post_meta($product_id, 'price_now', $bid_amount);
+                                $current_bids[] = [
+                                    'user_id' => $user_id,
+                                    'bid_amount' => $bid_amount,
+                                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                                ];
+                                update_post_meta($product_id, 'bids', $current_bids);
+                                $current_bids[] = [
+                                    'user_id' => $high_bids_user['user_id'],
+                                    'bid_amount' => $bid_amount,
+                                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                                ];
+                                update_post_meta($product_id, 'bids', $current_bids);
+                            } else {
+                                if ($high_bids_user['bid_amount'] >= $bid_amount + $increase) {
+                                    update_post_meta($product_id, 'price_now', $bid_amount + $increase);
+                                    $current_bids[] = [
+                                        'user_id' => $user_id,
+                                        'bid_amount' => $bid_amount + $increase,
+                                        'timestamp' => current_time('mysql') // Optional: add timestamp
+                                    ];
+
+                                    update_post_meta($product_id, 'bids', $current_bids);
+
+                                    update_post_meta($product_id, 'price_now', $bid_amount + $increase);
+                                    $current_bids[] = [
+                                        'user_id' => $high_bids_user['user_id'],
+                                        'bid_amount' => $bid_amount + $increase,
+                                        'timestamp' => current_time('mysql') // Optional: add timestamp
+                                    ];
+                                    update_post_meta($product_id, 'bids', $nex_bids);
+                                } else {
+                                    update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount']);
+                                    $current_bids[] = [
+                                        'user_id' => $user_id,
+                                        'bid_amount' => $bid_amount,
+                                        'timestamp' => current_time('mysql') // Optional: add timestamp
+                                    ];
+                                    update_post_meta($product_id, 'bids', $current_bids);
+                                    $current_bids[] = [
+                                        'user_id' => $high_bids_user['user_id'],
+                                        'bid_amount' => $bid_amount,
+                                        'timestamp' => current_time('mysql') // Optional: add timestamp
+                                    ];
+                                    update_post_meta($product_id, 'bids', $current_bids);
+                                }
+                            }
+
+                        }
+
+                    } else {
+                        set_alert_message_denger("پیشنهاد شما ثبت نشد . باتوجه با گام افزایشی حداقل مبلغ پیشنهادی" . $nex_bids . "است");
+                        wp_redirect(get_current_url());
+
+                    }
+
+
                 }
 
 
@@ -314,11 +361,10 @@ function save_bid()
 
 
         } else {
-            ?>
-            <script>
-                alert("قیمت ارسالی کمتر از قیمت شروع مزایده است");
-            </script>
-            <?php
+
+            set_alert_message_denger("پیشنهاد شما کمتر از قیمت پایه ای حراج است ، حداقل قیمت قابل قبول" . $start_price . " است");
+            wp_redirect(get_current_url());
+
         }
 
     }
@@ -355,6 +401,7 @@ function add_dokan_auction_product_type($types)
 
 
 }
+
 function get_product_author_id($product_id)
 {
     // گرفتن شیء محصول
@@ -369,6 +416,7 @@ function get_product_author_id($product_id)
         return false; // اگر محصول پیدا نشد
     }
 }
+
 function new_product_field_moza()
 {
 
@@ -412,7 +460,7 @@ function save_add_product_meta($product_id, $postdata)
 
     // ایجاد شیء DateTime از تاریخ و زمان میلادی
     $date = new DateTime($gregorian_datetime_str);
-    $next_date = '+'.$select_date_end.' days';
+    $next_date = '+' . $select_date_end . ' days';
     // اضافه کردن سه روز به تاریخ میلادی
     $date->modify($next_date);
 
@@ -574,7 +622,7 @@ function save_auction_product_options($post_id)
 
         // ایجاد شیء DateTime از تاریخ و زمان میلادی
         $date = new DateTime($gregorian_datetime_str);
-        $next_date = '+'.$select_date_end.' days';
+        $next_date = '+' . $select_date_end . ' days';
         // اضافه کردن تعداد روزهای مورد نظر به تاریخ میلادی
         $date->modify($next_date);
 
@@ -606,7 +654,6 @@ function obfuscateString($input)
 
     return $firstTwo . $stars . $lastChar;
 }
-
 
 
 function add_auction_to_cart()
@@ -641,6 +688,7 @@ function add_custom_price($cart)
         }
     }
 }
+
 function add_auction_product_to_dokan_dashboard($query)
 {
     if (!is_admin() && dokan_is_seller_dashboard()) {
@@ -659,12 +707,14 @@ function add_auction_product_to_dokan_dashboard($query)
         }
     }
 }
-function jalali_to_gregorian_with_time($jalali_datetime) {
+
+function jalali_to_gregorian_with_time($jalali_datetime)
+{
     // جدا کردن تاریخ و زمان
     list($jalali_date, $jalali_time) = explode('-', $jalali_datetime);
     list($year, $month, $day) = explode('/', $jalali_date);
     list($hour, $minute) = explode(':', $jalali_time);
-$second =0;
+    $second = 0;
     // تبدیل تاریخ شمسی به میلادی
     $gregorian_date = jalali_to_gregorian($year, $month, $day);
 
@@ -681,6 +731,7 @@ $second =0;
 
     return $gregorian_datetime_str;
 }
+
 // افزودن ستون جدید به لیست محصولات ووکامرس
 function castome_bids_to_tabel($columns)
 {
@@ -722,7 +773,9 @@ function dcustom_admin_products_store_name_column_content($column, $product_id)
         echo $count_bids;
     }
 }
-function update_start_price_callback() {
+
+function update_start_price_callback()
+{
     if (!isset($_GET['product_id'])) {
         wp_send_json_error();
     }
@@ -730,9 +783,9 @@ function update_start_price_callback() {
     $product_id = intval($_GET['product_id']);
     $metabox_product = get_post_meta($product_id, '', true);
 
-    if (isset($metabox_product['start_price'][0])) {
-        $start_price = number_format($metabox_product['start_price'][0]);
-        wp_send_json_success(['start_price' => $start_price]);
+    if (isset($metabox_product['price_now'][0])) {
+        $start_price = number_format($metabox_product['price_now'][0]);
+        wp_send_json_success(['price_now' => $start_price]);
     } else {
         wp_send_json_error();
     }

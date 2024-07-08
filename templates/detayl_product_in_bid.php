@@ -1,29 +1,18 @@
-<?php
-if (isset($_GET["save_bid"]) && $_GET['save_bid'] == "duplicate") {
-    ?>
-    <div class="denger">پیشنهاد بالاتری وارد کنید این پینهاد کم بود</div>
-    <?php
-} elseif (isset($_GET["save_bid"]) && $_GET['save_bid'] == "ok") {
+<?php echo
+session_start();
 
-    ?>
-    <div class="sucsee">پیشنهاد با مفقیت ثبت شد</div>
-    <?php
-}elseif (isset($_GET["price"]) && $_GET["price"]=="low"){
-    ?>
-    <div class="denger">
-        قیمت شما کمتر از پلکان بوده مبلغ خود را بیشتر کنید
-    </div>
-    <?php
-}
+display_alert_message_denger();?>
+<?php echo display_alert_message_sucsses();?>
+<?php
 
 save_bid();
 $metabox_product = get_post_meta($product_id, '', true);
-
+echo $metabox_product['price_now'][0];
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
     $start_date_shamsi = $metabox_product['start_time_moza'][0]; // تاریخ شروع از متاباکس
     $end_date_shamsi = $metabox_product['end_time_moza'][0]; // تاریخ پایان از متاباکس
 
-
+    $price_now = get_post_meta($product_id, 'price_now', true);
     $start_gregorian_date = jalali_to_gregorian_with_time($start_date_shamsi);
 
 
@@ -214,7 +203,8 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
             },
             success: function (response) {
                 if (response.success) {
-                    document.getElementById("start_price").innerText = response.data.start_price + " تومان";
+                    console.log(response)
+                    document.getElementById("start_price").innerText = response.data.price_now + " تومان";
                 }
             }
         });
