@@ -14,10 +14,12 @@ $reject_request = isset($metabox_product['reject_request'][0]) ? $metabox_produc
 $accept_request = isset($metabox_product['accept_request'][0]) ? $metabox_product['accept_request'][0] : '';
 $start_time = isset($metabox_product['start_time_moza'][0]) ? $metabox_product['start_time_moza'][0] : '';
 $end_time = isset($metabox_product['end_time_moza'][0]) ? $metabox_product['end_time_moza'][0] : '';
+
+
 ?>
 <div class="fom_group_data_moza" id="fom_group_data_moza">
     <div class="form_create_moza">
-    <?php wp_nonce_field( 'save_auction_product_options', 'auction_product_options_nonce' ); ?>
+        <?php wp_nonce_field('save_auction_product_options', 'auction_product_options_nonce'); ?>
 
         <p>
             <label for="quality">کیفیت ایتم</label>
@@ -78,10 +80,10 @@ $end_time = isset($metabox_product['end_time_moza'][0]) ? $metabox_product['end_
         </p>
 
         <p>
-            <label for="start_time">تاریخ شروع </label>
-            <input type="text" id="start_time" name="start_time_moza" value="<?php echo esc_attr($start_time); ?>">
-            <div class="range-from-example" id="start_time"></div>
-            <div class="range-to-example" id="end_time"></div>
+        <div>
+            <label for="start_time">تاریخ:</label>
+            <input type="text" id="start_time" name="start_time_moza" value="<?php echo $start_time; ?>" data-date="<?php echo $start_time; ?>">
+        </div>
         </p>
         <p>
             <label for="select_date_end">تاریخ پایان</label>
@@ -90,7 +92,7 @@ $end_time = isset($metabox_product['end_time_moza'][0]) ? $metabox_product['end_
                 <option value="3" <?php selected($select_date_end, '3'); ?>>سه روز</option>
                 <option value="7" <?php selected($select_date_end, '7'); ?>>هفت روز</option>
             </select>
-            
+
         </p>
         <p>
             <label for="post_item_end_date">ثبت مجدد ایتم در صورت عدم فروش</label>

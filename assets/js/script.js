@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     locale: 'en'
                 }
             },
-            format: 'YYYY/MM/DD HH:mm:ss',
+            format: 'YYYY/MM/DD-HH:mm:ss',
             timePicker: {
                 enabled: true,
                 step: 1,
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 meridian: {
                     enabled: false
                 }
-            },
+            }
         });
     });
 

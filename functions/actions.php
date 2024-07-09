@@ -2,7 +2,7 @@
 
 add_action('admin_menu', 'menu_mza_in_price');
 
-add_action('woocommerce_product_meta_end','show_product_code',13);
+add_action('woocommerce_single_product_summary','show_product_code',10);
 add_filter( 'woocommerce_product_tabs', 'add_bils_moza_to_wo', 9999 );
 add_action('admin_post_save_custom_price_ranges', 'save_custom_price_ranges');
 add_action( 'init', 'create_quality_taxonomy' );

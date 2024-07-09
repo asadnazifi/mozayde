@@ -1,14 +1,19 @@
-<?php echo
+<?php
 session_start();
 
-display_alert_message_denger();?>
-<?php echo display_alert_message_sucsses();?>
+display_alert_message_denger(); ?>
+<?php echo display_alert_message_sucsses(); ?>
 <?php
 
 save_bid();
 $metabox_product = get_post_meta($product_id, '', true);
-echo $metabox_product['price_now'][0];
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
+    if (isset($metabox_product['start_price'][0])): ?>
+        <div class="price_moza">
+            <span id="start_price"> <?php echo number_format($metabox_product['start_price'][0]); ?> تومان
+            </span>
+        </div>
+    <?php endif;
     $start_date_shamsi = $metabox_product['start_time_moza'][0]; // تاریخ شروع از متاباکس
     $end_date_shamsi = $metabox_product['end_time_moza'][0]; // تاریخ پایان از متاباکس
 
@@ -18,32 +23,23 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
 
     $end_gregorian_date = jalali_to_gregorian_with_time($end_date_shamsi);
     ?>
-    <div class="time_moza sucsee"> <i class="fa-solid fa-calendar-days "></i>تاریخ شروع مزایده: <span id="start_countdown"
-            class=""></span><br>
+    <div class="time_moza_start"><span id="start_countdown" class=""></span><br>
     </div>
-    <div class="time_moza denger">
-        <i class="fa-solid fa-calendar-days denger"></i>تاریخ پایان مزایده: <span id="end_countdown" class=''></span>
+    <div class="time_moza">
+        <span id="end_countdown" class=''></span>
     </div>
-  
-
-    <?php if (isset($metabox_product['start_price'][0])): ?>
-        <div class="price_moza">
-            قیمت شروع معامله : <span id="start_price"> <?php echo number_format($metabox_product['start_price'][0]); ?> تومان
-            </span>
-        </div>
-    <?php endif;
+    <?php
     $id_user_create_post = get_product_author_id($product_id);
 
-    ?>
+    if ($metabox_product['option_sell'][0] == "aution" && $end_gregorian_date > date("Y-m-d")): ?>
 
-    <?php if ($metabox_product['option_sell'][0] == "aution" && $end_gregorian_date > date("Y-m-d")): ?>
         <?php if (is_user_logged_in()): ?>
             <?php if ($id_user_create_post != get_current_user_id()): ?>
                 <form id="bid_form" action="" method="post" style="display: none;">
                     <input type="hidden" name="product_id" value="<?php echo $product_id ?>">
                     <input type="hidden" name="user_id" value="<?php echo get_current_user_id(); ?>">
-                    <input type="number" name="bid_amount" placeholder="پیشنهاد خود را وارد کنید" id="bid_amount">
-                    <button type="submit" onclick="confirmBid()">ارسال پیشنهاد</button>
+                    <input type="number" name="bid_amount" placeholder="حداکثر پیشنهاد شما" id="bid_amount">
+                    <button type="submit" onclick="confirmBid()" class="submit_form_bids">ارسال پیشنهاد</button>
                 </form>
             <?php else: ?>
                 <p class='denger'>شما سازنده مزایده هستید نمیتوانید پیشنهاد ارسال کنید</p>
@@ -51,16 +47,15 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
         <?php else: ?>
             <p class="denger">لطفا برای ارسال پیشنهاد مزایده ورود کنید</p>
         <?php endif; ?>
-    <?php else:
+        <?php
         $bids = get_post_meta($product_id, "bids", true);
         if ($bids) {
-            $bids_user = get_post_meta($product_id, 'bids_user', true);
+            $bids_user = get_post_meta($product_id, 'high_bids', true);
             $top_bids = findMaxBidAmount($bids_user);
             if (get_current_user_id() == $top_bids['user_id']) {
                 ?>
-                <p>هورااا شما مزایدرو بردید</p>
                 <p>پشنهاد شما:<?php echo $top_bids['bid_amount'] ?></p>
-                <button id="auction-pay">پرداخت مزایده</button>
+                <button id="auction-pay" class="submit_form_bids">تبریک فراوان شما برنده شدید جهت پرداخت کلیک کنید</button>
                 <?php
             } else {
                 ?>
@@ -69,15 +64,14 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
                 </div>
                 <?php
             }
-        } else {
+        }else{
             ?>
             <div class="denger">
                 متاسفانه مزایده شما بدون پیشنهادتمام شد </div>
             <?php
         }
-
-
-        ?>
+?>
+<?php else:?>
 
     <?php endif; ?>
 <?php endif; ?>
@@ -128,14 +122,15 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
                 + endMinutes + " دقیقه " + endSeconds + " ثانیه ";
 
             document.getElementById("start_countdown").innerHTML = "مزایده آغاز شده است";
+
             if (bidForm) {
                 bidForm.style.display = "block";
 
             }
         } else {
             clearInterval(x);
-            document.getElementById("start_countdown").innerHTML = "مزایده به پایان رسیده است";
-            document.getElementById("end_countdown").innerHTML = "";
+            document.getElementById("start_countdown").innerHTML = "";
+            document.getElementById("end_countdown").innerHTML = "مزایده به پایان رسیده است";
             if (bidForm) {
                 bidForm.style.display = "none";
 
