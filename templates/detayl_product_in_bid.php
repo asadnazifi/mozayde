@@ -6,6 +6,9 @@ display_alert_message_denger(); ?>
 <?php
 
 save_bid();
+$bids_user = get_post_meta($product_id, 'high_bids', true);
+$top_bids = findMaxBidAmount($bids_user);
+$price = get_post_meta($product_id,"price_now", true);
 $metabox_product = get_post_meta($product_id, '', true);
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
     if (isset($metabox_product['start_price'][0])): ?>
@@ -23,15 +26,27 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
 
     $end_gregorian_date = jalali_to_gregorian_with_time($end_date_shamsi);
     ?>
-    <div class="time_moza_start"><span id="start_countdown" class=""></span><br>
+    <div class="time_moza_start"><span id="start_countdown" class="">
+        <?php if($top_bids){
+         if($top_bids['user_id'] == get_current_user_id()){
+            echo 'بالاترین پیشنهاد شما  '.number_format($top_bids['bid_amount']).'    تومان است';
+         }else{
+            echo 'شما دیگر بالاترین پیشنهاد دهنده این مزایده نیستید برای برنده شدن پیشنهاد بالاتری ثبت کنید';
+         }   
+            
+            
+        }else{
+            echo 'پیشنهادی هنوز ثبت نشده!';
+        }
+            ?>
+    </span><br>
     </div>
     <div class="time_moza">
         <span id="end_countdown" class=''></span>
     </div>
     <?php
     $id_user_create_post = get_product_author_id($product_id);
-
-    if ($metabox_product['option_sell'][0] == "aution" && $end_gregorian_date > date("Y-m-d")): ?>
+    if ($metabox_product['option_sell'][0] == "aution" && $end_gregorian_date > date("Y-m-d H:m:s")): ?>
 
         <?php if (is_user_logged_in()): ?>
             <?php if ($id_user_create_post != get_current_user_id()): ?>
@@ -47,33 +62,28 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
         <?php else: ?>
             <p class="denger">لطفا برای ارسال پیشنهاد مزایده ورود کنید</p>
         <?php endif; ?>
+        <?php else:
+    $bids = get_post_meta($product_id, "bids", true);
+    if ($bids) {
+    $bids_user = get_post_meta($product_id, 'high_bids', true);
+    $top_bids = findMaxBidAmount($bids_user);
+    if (get_current_user_id() == $top_bids['user_id']) {
+    ?>
+    <button id="auction-pay" class="submit_form_bids">تبریک فراوان شما برنده شدید جهت پرداخت کلیک کنید</button>
+    <?php
+} else {
+        ?>
+        <div class="denger">
+            متسفانه از شما پیشنهاد بالاتر وجود داشت شما مزایدرو باختید
+        </div>
         <?php
-        $bids = get_post_meta($product_id, "bids", true);
-        if ($bids) {
-            $bids_user = get_post_meta($product_id, 'high_bids', true);
-            $top_bids = findMaxBidAmount($bids_user);
-            if (get_current_user_id() == $top_bids['user_id']) {
-                ?>
-                <p>پشنهاد شما:<?php echo $top_bids['bid_amount'] ?></p>
-                <button id="auction-pay" class="submit_form_bids">تبریک فراوان شما برنده شدید جهت پرداخت کلیک کنید</button>
-                <?php
-            } else {
-                ?>
-                <div class="denger">
-                    متسفانه از شما پیشنهاد بالاتر وجود داشت شما مزایدرو باختید
-                </div>
-                <?php
-            }
-        }else{
-            ?>
-            <div class="denger">
-                متاسفانه مزایده شما بدون پیشنهادتمام شد </div>
-            <?php
-        }
-?>
-<?php else:?>
-
-    <?php endif; ?>
+    }
+}else{
+        ?>
+        <div class="denger">
+            متاسفانه مزایده شما بدون پیشنهادتمام شد </div>
+        <?php
+    }endif; ?>
 <?php endif; ?>
 <script>
     // تاریخ و زمان شروع و پایان مزایده را از PHP دریافت کنید
@@ -121,8 +131,6 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
             document.getElementById("end_countdown").innerHTML = endDays + " روز " + endHours + " ساعت "
                 + endMinutes + " دقیقه " + endSeconds + " ثانیه ";
 
-            document.getElementById("start_countdown").innerHTML = "مزایده آغاز شده است";
-
             if (bidForm) {
                 bidForm.style.display = "block";
 
@@ -159,8 +167,8 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
     }
     jQuery(document).ready(function ($) {
         $('#auction-pay').on('click', function () {
-            var bidAmount = <?php if (isset($top_bids['bid_amount'])) {
-                echo $top_bids['bid_amount'];
+            var bidAmount = <?php if (isset($price_now)&& $price_now>0) {
+                echo $price_now;
             } else {
                 echo 0;
             }

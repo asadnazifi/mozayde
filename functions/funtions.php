@@ -251,6 +251,7 @@ function save_bid()
 
                             if ($low <= $price_now && $price_now <= $high) {
                                 $nex_bids = $price_now + $increase;
+
                                 if ($bid_amount >= $nex_bids) {
                                     if ($bid_amount > $high_bids_user['bid_amount']) {
                                         if ($high_bids_user['bid_amount'] != $price_now) {
@@ -259,10 +260,11 @@ function save_bid()
                                                 'bid_amount' => $high_bids_user['bid_amount'],
                                                 'timestamp' => current_time('mysql') // Optional: add timestamp
                                             ];
+                                            update_post_meta($product_id, 'bids', $current_bids);
                                         }
 
 
-                                        update_post_meta($product_id, 'bids', $current_bids);
+
                                         if ($bid_amount > $high_bids_user['bid_amount'] + $increase) {
                                             update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount'] + $increase);
                                             $current_bids_high[] = [
@@ -291,6 +293,7 @@ function save_bid()
                                                 'timestamp' => current_time('mysql') // Optional: add timestamp
                                             ];
                                             update_post_meta($product_id, 'bids', $current_bids);
+                                            update_post_meta($product_id, 'high_bids', $current_bids);
                                             update_post_meta($product_id, 'price_now', $bid_amount);
                                             set_alert_message_sucsses("پیشنهاد شما با مفقیت ثبت شد.بالاترین پیشنهاد شما   " . $bid_amount . " است ");
                                             wp_redirect(get_current_url());
