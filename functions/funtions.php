@@ -202,11 +202,16 @@ function save_bid()
             if (!$current_bids) {
                 $current_bids[] = [
                     'user_id' => $user_id,
-                    'bid_amount' => $bid_amount,
+                    'bid_amount' => $start_price,
                     'timestamp' => current_time('mysql') // Optional: add timestamp
                 ];
                 update_post_meta($product_id, 'bids', $current_bids);
-                update_post_meta($product_id, 'price_now', $bid_amount);
+                update_post_meta($product_id, 'price_now', $start_price);
+                $current_bids[] = [
+                    'user_id' => $user_id,
+                    'bid_amount' => $bid_amount,
+                    'timestamp' => current_time('mysql') // Optional: add timestamp
+                ];
                 update_post_meta($product_id, 'high_bids', $current_bids);
 
                 // Update bids in post meta
@@ -247,8 +252,6 @@ function save_bid()
                             $low = (int)$increas[$low_key];
                             $high = (int)$increas[$high_key];
                             $increase = (int)$increas[$increase_key];
-
-
                             if ($low <= $price_now && $price_now <= $high) {
                                 $nex_bids = $price_now + $increase;
 
@@ -262,8 +265,6 @@ function save_bid()
                                             ];
                                             update_post_meta($product_id, 'bids', $current_bids);
                                         }
-
-
 
                                         if ($bid_amount > $high_bids_user['bid_amount'] + $increase) {
                                             update_post_meta($product_id, 'price_now', $high_bids_user['bid_amount'] + $increase);
@@ -302,20 +303,19 @@ function save_bid()
                                     } else {
                                         if ($bid_amount == $high_bids_user['bid_amount']) {
                                             update_post_meta($product_id, 'price_now', $bid_amount);
-
-                                            $current_bids[] = [
-                                                'user_id' => $high_bids_user['user_id'],
-                                                'bid_amount' => $bid_amount,
-                                                'timestamp' => current_time('mysql') // Optional: add timestamp
-                                            ];
-                                            update_post_meta($product_id, 'bids', $current_bids);
-                                            sleep(10);
                                             $current_bids[] = [
                                                 'user_id' => $user_id,
                                                 'bid_amount' => $bid_amount,
                                                 'timestamp' => current_time('mysql') // Optional: add timestamp
                                             ];
                                             update_post_meta($product_id, 'bids', $current_bids);
+                                            $current_bids[] = [
+                                                'user_id' => $high_bids_user['user_id'],
+                                                'bid_amount' => $bid_amount,
+                                                'timestamp' => current_time('mysql') // Optional: add timestamp
+                                            ];
+                                            update_post_meta($product_id, 'bids', $current_bids);
+
                                             set_alert_message_denger("شرکت کننده دیگری قبلا همین پیشنهاد را وارد کرده است ، لطفا پیشنهاد خود را بالا ببرید");
                                             wp_redirect(get_current_url());
                                         } else {
@@ -329,20 +329,19 @@ function save_bid()
                                                 ];
             
                                                 update_post_meta($product_id, 'bids', $current_bids);
-                                                sleep(5);
                                                 $current_bids[] = [
                                                     'user_id' => $user_id,
                                                     'bid_amount' => $bid_amount,
                                                     'timestamp' => current_time('mysql') // Optional: add timestamp
                                                 ];
-                                                update_post_meta($product_id, 'bids', $nex_bids);
+                                                update_post_meta($product_id, 'bids',$current_bids );
                                                 set_alert_message_denger("شرکت کننده دیگری قبلا پیشنهاد بالاتری از شما ثبت کرده است لطفا پیشنهاد خود را بالا ببرید");
                                                 wp_redirect(get_current_url());
             
                                             } else {
                                                 $current_bids[] = [
                                                     'user_id' => $high_bids_user['user_id'],
-                                                    'bid_amount' => $bid_amount,
+                                                    'bid_amount' => $high_bids_user['bid_amount'],
                                                     'timestamp' => current_time('mysql') // Optional: add timestamp
                                                 ];
                                                 update_post_meta($product_id, 'bids', $current_bids);

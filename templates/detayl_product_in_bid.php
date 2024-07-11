@@ -13,7 +13,14 @@ $metabox_product = get_post_meta($product_id, '', true);
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
     if (isset($metabox_product['start_price'][0])): ?>
         <div class="price_moza">
-            <span id="start_price"> <?php echo number_format($metabox_product['start_price'][0]); ?> تومان
+            <span id="start_price"> <?php 
+            if(isset($price) && $price>0){
+                echo number_format($price).'تومان';
+            }else{
+                echo number_format($metabox_product['start_price'][0]).'تومان';
+            }
+            
+            ?> 
             </span>
         </div>
     <?php endif;
