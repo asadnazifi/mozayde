@@ -1,22 +1,42 @@
+
+<div class="box_single_product_moza">
 <?php
 session_start();
 
 display_alert_message_denger(); ?>
 <?php echo display_alert_message_sucsses(); ?>
 <?php
-
+date_default_timezone_set('Asia/Tehran');
 save_bid();
 $bids_user = get_post_meta($product_id, 'high_bids', true);
 $top_bids = findMaxBidAmount($bids_user);
+$bids_product = get_post_meta($product_id,'bids',true);
+$top_bid_product =findMaxBidAmount($bids_product);
 $price = get_post_meta($product_id,"price_now", true);
 $metabox_product = get_post_meta($product_id, '', true);
+$set_price = $metabox_product['set_price'][0];
+if (isset($set_price) && $set_price!==null && $set_price>$price){
+    echo "<div class='denger'>قیمت این کالا به قیمت رزرو نرسیده و فروشنده میتواند این کالارا ارسال نکند</div>";
+}
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
     if (isset($metabox_product['start_price'][0])): ?>
         <div class="price_moza">
-            <span id="start_price"> <?php echo number_format($metabox_product['start_price'][0]); ?> تومان
+            <span id="start_price"> <?php 
+            if(isset($price) && $price>0){
+                echo number_format($price).'تومان';
+            }else{
+                echo number_format($metabox_product['start_price'][0]).'تومان';
+            }
+            
+            ?> 
             </span>
         </div>
+        <div class="time_moza_start"><span id="start_countdown" class=""></span></div>
+        <div class="alert text-center alert-warning end_time_moza">
+            <span id="end_countdown" class=''></span>
+        </div>
     <?php endif;
+
     $start_date_shamsi = $metabox_product['start_time_moza'][0]; // تاریخ شروع از متاباکس
     $end_date_shamsi = $metabox_product['end_time_moza'][0]; // تاریخ پایان از متاباکس
 
@@ -25,25 +45,16 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
 
 
     $end_gregorian_date = jalali_to_gregorian_with_time($end_date_shamsi);
-    ?>
-    <div class="time_moza_start"><span id="start_countdown" class="">
-        <?php if($top_bids){
-         if($top_bids['user_id'] == get_current_user_id()){
-            echo 'بالاترین پیشنهاد شما  '.number_format($top_bids['bid_amount']).'    تومان است';
-         }else{
-            echo 'شما دیگر بالاترین پیشنهاد دهنده این مزایده نیستید برای برنده شدن پیشنهاد بالاتری ثبت کنید';
-         }   
-            
-            
-        }else{
-            echo 'پیشنهادی هنوز ثبت نشده!';
-        }
-            ?>
-    </span><br>
+    if ($top_bid_product['user_id'] ==get_current_user_id()):?>
+
+    <div class="alert alert-success text-center">
+        شما بالاترین پیشنهاد هستید با:  <?php echo number_format($top_bid_product['bid_amount'])?>  تومان
     </div>
-    <div class="time_moza">
-        <span id="end_countdown" class=''></span>
+    <?php elseif(findMaxBidAmount($bids_product,get_current_user_id())):?>
+    <div class="alert alert-denger text-center">
+        شما دیگر بالاترین پیشنهاد دهنده این مزایده نیستید، برای برنده شدن لطفا پیشنهاد خود را بالا ببرید
     </div>
+    <?php endif;?>
     <?php
     $id_user_create_post = get_product_author_id($product_id);
     if ($metabox_product['option_sell'][0] == "aution" && $end_gregorian_date > date("Y-m-d H:m:s")): ?>
@@ -56,6 +67,9 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
                     <input type="number" name="bid_amount" placeholder="حداکثر پیشنهاد شما" id="bid_amount">
                     <button type="submit" onclick="confirmBid()" class="submit_form_bids">ارسال پیشنهاد</button>
                 </form>
+                <div class="cunt_bids text-center m-t-10">
+                    <a href="#" id="show_hide_list_moza"><?php echo count($bids_product);?> پیشنهاد تا کنون - تاریخچه را ببینید</a>
+                </div>
             <?php else: ?>
                 <p class='denger'>شما سازنده مزایده هستید نمیتوانید پیشنهاد ارسال کنید</p>
             <?php endif; ?>
@@ -85,6 +99,55 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
         <?php
     }endif; ?>
 <?php endif; ?>
+</div>
+<?php
+$bid_top_user_in_bid =findMaxBidAmount($bids_user,get_current_user_id()); ?>
+<?php if (isset($bid_top_user_in_bid)):?>
+<div class="alert alert-warning text-center m-t-10">
+    بالاترین پیشنهاد شما  <?php echo number_format($bid_top_user_in_bid['bid_amount']);?> تومان است
+</div>
+
+<?php endif;?>
+<div class="box_moza_list" id="box_moza_list">
+    <?php if ($bids_product && is_array($bids_product)) {
+        // مرتب‌سازی پیشنهادات از جدید به قدیم
+        usort($bids_product, function ($a, $b) {
+            return (int)$b['bid_amount'] - (int)$a['bid_amount'];
+        });
+
+        echo '<table>';
+        echo '<tr><th>ردیف</th><th>کاربر</th><th>مبلغ پیشنهاد</th><th>زمان ارسال</th></tr>';
+        $row_number = 1;
+        foreach ($bids_product as $bid) {
+            $user_info = get_userdata($bid['user_id']);
+
+            $gregorianDate  = $bid['timestamp'];
+            // استخراج تاریخ و زمان از رشته
+            list($date, $time) = explode(' ', $gregorianDate);
+            list($gy, $gm, $gd) = explode('-', $date);
+            list($hour, $minute, $second) = explode(':', $time);
+
+            // تبدیل تاریخ میلادی به شمسی
+            list($jy, $jm, $jd) = gregorian_to_jalali($gy, $gm, $gd);
+
+            // ترکیب تاریخ و زمان شمسی
+            $jalaliDateWithTime = "$jy/$jm/$jd $hour:$minute:$second";
+            $user_name = $user_info ? $user_info->user_login : 'کاربر ناشناس';
+            echo '<tr>';
+            echo '<td>' . esc_html($row_number) . '</td>';
+            echo '<td>' . obfuscateString(esc_html($user_name)) . '</td>';
+            echo '<td>' . number_format(esc_html($bid['bid_amount'])) . ' تومان</td>';
+            echo '<td>' . esc_html($jalaliDateWithTime) . '</td>';
+            echo '</tr>';
+            $row_number++;
+        }
+        echo '</table>';
+    } else {
+        echo '<p>هیچ پیشنهادی ارسال نشده است.</p>';
+    }?>
+    <button id="close_bid">بستن</button>
+</div>
+
 <script>
     // تاریخ و زمان شروع و پایان مزایده را از PHP دریافت کنید
     const startAuctionDate = new Date("<?php echo $start_gregorian_date; ?>").getTime();
@@ -112,8 +175,8 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
             const startSeconds = Math.floor((startDistance % (1000 * 60)) / 1000);
 
             // نمایش نتیجه در عنصر با id="start_countdown"
-            document.getElementById("start_countdown").innerHTML = startDays + " روز " + startHours + " ساعت "
-                + startMinutes + " دقیقه " + startSeconds + " ثانیه ";
+            document.getElementById("start_countdown").innerHTML = startDays + "d " + startHours + "D"
+                + startMinutes + ":" + startSeconds;
 
             document.getElementById("end_countdown").innerHTML = "";
             if (bidForm) {
@@ -128,8 +191,8 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
             const endSeconds = Math.floor((endDistance % (1000 * 60)) / 1000);
 
             // نمایش نتیجه در عنصر با id="end_countdown"
-            document.getElementById("end_countdown").innerHTML = endDays + " روز " + endHours + " ساعت "
-                + endMinutes + " دقیقه " + endSeconds + " ثانیه ";
+            document.getElementById("end_countdown").innerHTML = endDays + "d " + endHours + ":"
+                + endMinutes + ":" + endSeconds;
 
             if (bidForm) {
                 bidForm.style.display = "block";
@@ -206,8 +269,10 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
             },
             success: function (response) {
                 if (response.success) {
-                    console.log(response)
-                    document.getElementById("start_price").innerText = response.data.price_now + " تومان";
+                    if(response.data.price_now!== null){
+                        document.getElementById("start_price").innerText = response.data.price_now + " تومان";
+
+                    }
                 }
             }
         });

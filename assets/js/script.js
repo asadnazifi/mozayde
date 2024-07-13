@@ -97,7 +97,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+        $("#show_hide_list_moza").click(function (){
+            $("#box_moza_list").toggle(1000);
+        })
     });
+    $("#close_bid").click(function (){
+        $("#box_moza_list").hide(1000);
+
+    })
 
 
 });

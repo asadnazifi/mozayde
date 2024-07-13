@@ -68,12 +68,6 @@ $end_time = isset($metabox_product['end_time_moza'][0]) ? $metabox_product['end_
         </p>
 
         <p>
-            <label for="price">قیمت خرید فوری</label>
-            <input type="number" name="price" id="price" placeholder="قیمت خرید فوری ایتم تومان"
-                value="<?php echo esc_attr($price); ?>">
-        </p>
-
-        <p>
             <label for="price_sent">قیمت ارسال</label>
             <input type="number" name="price_sent" id="price_sent" placeholder="هزینه ارسال ایتم تومان"
                 value="<?php echo esc_attr($price_sent); ?>">
