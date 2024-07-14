@@ -33,3 +33,21 @@ add_action('wp_ajax_nopriv_update_start_price', 'update_start_price_callback');
 add_action('wp_ajax_add_auction_to_cart', 'add_auction_to_cart');
 add_action('wp_ajax_nopriv_add_auction_to_cart', 'add_auction_to_cart');
 
+add_action('template_redirect', 'prevent_seller_editing_published_products');
+
+function prevent_seller_editing_published_products() {
+    if ( is_user_logged_in() && dokan_is_seller_dashboard() && isset($_GET['product_id']) ) {
+        $product_id = intval($_GET['product_id']);
+        $bids = get_post_meta( $product_id,'bids',true);
+
+        
+            // Check if the current user is the seller of this product
+            if ( $bids && count( $bids ) > 0) {
+                // اگر کاربر جاری نویسنده محصول نیست
+                wp_die( __('به دلیل داشتن پیشنهاد در محصول شما اجازه ویرایش محصول را ندارید', 'your-text-domain') );
+            }
+        
+    }
+
+    // Add notice after redirect
+}

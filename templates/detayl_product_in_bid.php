@@ -15,6 +15,7 @@ $top_bid_product =findMaxBidAmount($bids_product);
 $price = get_post_meta($product_id,"price_now", true);
 $metabox_product = get_post_meta($product_id, '', true);
 $set_price = $metabox_product['set_price'][0];
+echo get_current_user_id();
 if (isset($set_price) && $set_price!==null && $set_price>$price){
     echo "<div class='denger'>قیمت این کالا به قیمت رزرو نرسیده و فروشنده میتواند این کالارا ارسال نکند</div>";
 }
@@ -45,7 +46,7 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
 
 
     $end_gregorian_date = jalali_to_gregorian_with_time($end_date_shamsi);
-    if ($top_bid_product['user_id'] ==get_current_user_id()):?>
+    if (isset($top_bid_product)&&$top_bid_product['user_id'] ==get_current_user_id()):?>
 
     <div class="alert alert-success text-center">
         شما بالاترین پیشنهاد هستید با:  <?php echo number_format($top_bid_product['bid_amount'])?>  تومان
@@ -68,7 +69,7 @@ if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end
                     <button type="submit" onclick="confirmBid()" class="submit_form_bids">ارسال پیشنهاد</button>
                 </form>
                 <div class="cunt_bids text-center m-t-10">
-                    <a href="#" id="show_hide_list_moza"><?php echo count($bids_product);?> پیشنهاد تا کنون - تاریخچه را ببینید</a>
+                    <a href="#" id="show_hide_list_moza"><?php echo (is_array($bids_product))?count($bids_product):0;?> پیشنهاد تا کنون - تاریخچه را ببینید</a>
                 </div>
             <?php else: ?>
                 <p class='denger'>شما سازنده مزایده هستید نمیتوانید پیشنهاد ارسال کنید</p>
@@ -112,12 +113,11 @@ $bid_top_user_in_bid =findMaxBidAmount($bids_user,get_current_user_id()); ?>
     <?php if ($bids_product && is_array($bids_product)) {
         // مرتب‌سازی پیشنهادات از جدید به قدیم
         usort($bids_product, function ($a, $b) {
-            return (int)$b['bid_amount'] - (int)$a['bid_amount'];
+            return (int)$b['id'] - (int)$a['id'];
         });
-
+        $number_row = 1;
         echo '<table>';
         echo '<tr><th>ردیف</th><th>کاربر</th><th>مبلغ پیشنهاد</th><th>زمان ارسال</th></tr>';
-        $row_number = 1;
         foreach ($bids_product as $bid) {
             $user_info = get_userdata($bid['user_id']);
 
@@ -134,12 +134,13 @@ $bid_top_user_in_bid =findMaxBidAmount($bids_user,get_current_user_id()); ?>
             $jalaliDateWithTime = "$jy/$jm/$jd $hour:$minute:$second";
             $user_name = $user_info ? $user_info->user_login : 'کاربر ناشناس';
             echo '<tr>';
-            echo '<td>' . esc_html($row_number) . '</td>';
+            echo '<td>' . esc_html($number_row) . '</td>';
             echo '<td>' . obfuscateString(esc_html($user_name)) . '</td>';
             echo '<td>' . number_format(esc_html($bid['bid_amount'])) . ' تومان</td>';
             echo '<td>' . esc_html($jalaliDateWithTime) . '</td>';
             echo '</tr>';
-            $row_number++;
+            $number_row +=1;
+            
         }
         echo '</table>';
     } else {
