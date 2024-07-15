@@ -380,8 +380,6 @@ function save_bid()
                                         }
                                     } else {
                                         if ($bid_amount == $high_bids_user['bid_amount']) {
-                                            echo get_next_bid_id_user($product_id);
-                                            exit();
                                             $current_bids[] = [
                                                 'id'=>get_next_bid_id($product_id),
                                                 'user_id' => $user_id,
@@ -389,13 +387,7 @@ function save_bid()
                                                 'timestamp' => current_time('mysql') // Optional: add timestamp
                                             ];
                                             update_post_meta($product_id, 'bids', $current_bids);
-                                            $current_bids[] = [
-                                                'id'=>get_next_bid_id_user($product_id),
-                                                'user_id' => $user_id,
-                                                'bid_amount' => $bid_amount,
-                                                'timestamp' => current_time('mysql') // Optional: add timestamp
-                                            ];
-                                            update_post_meta($product_id, 'high_bids', $current_bids);
+
                                             update_post_meta($product_id, 'price_now', $bid_amount);
                                             $current_bids[] = [
                                                 'id'=>get_next_bid_id($product_id),
@@ -404,8 +396,16 @@ function save_bid()
                                                 'timestamp' => current_time('mysql') // Optional: add timestamp
                                             ];
                                             update_post_meta($product_id, 'bids', $current_bids);
+                                            $current_bids[]= [
+                                                'id'=>get_next_bid_id_user($product_id),
+                                                'user_id' => $user_id,
+                                                'bid_amount' => $bid_amount,
+                                                'timestamp' => current_time('mysql') // Optional: add timestamp
+                                            ];
+                                            update_post_meta($product_id, 'high_bids', $current_bids);
                                             set_alert_message_denger("شرکت کننده دیگری قبلا همین پیشنهاد را وارد کرده است ، لطفا پیشنهاد خود را بالا ببرید");
                                             wp_redirect(get_current_url());
+                                            exit();
                                         } else {
                                             if ($high_bids_user['bid_amount'] >= $bid_amount + $increase) {
                                                 update_post_meta($product_id, 'price_now', $bid_amount + $increase);

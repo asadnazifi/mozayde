@@ -15,9 +15,8 @@ $top_bid_product =findMaxBidAmount($bids_product);
 $price = get_post_meta($product_id,"price_now", true);
 $metabox_product = get_post_meta($product_id, '', true);
 $set_price = $metabox_product['set_price'][0];
-echo get_current_user_id();
 if (isset($set_price) && $set_price!==null && $set_price>$price){
-    echo "<div class='denger'>قیمت این کالا به قیمت رزرو نرسیده و فروشنده میتواند این کالارا ارسال نکند</div>";
+    echo "<div class='denger set_price'>قیمت این کالا به قیمت رزرو نرسیده و فروشنده میتواند این کالارا ارسال نکند</div>";
 }
 if (isset($metabox_product['start_time_moza'][0]) && isset($metabox_product['end_time_moza'][0])):
     if (isset($metabox_product['start_price'][0])): ?>

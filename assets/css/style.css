@@ -108,6 +108,9 @@
 .m-t-10{
     margin-top: 10px;
 }
+.set_price{
+    animation: scaleBox 2s infinite;
+}
 .box_moza_list{
     position: absolute;
     top: 0;
@@ -149,4 +152,12 @@
     background-color: #007acd !important;
     color: white !important;
     border:none !important;
+}
+@keyframes scaleBox {
+    0%, 100% {
+        transform: scale(0.92);
+    }
+    50% {
+        transform: scale(0.98);
+    }
 }
