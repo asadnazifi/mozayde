@@ -32,54 +32,16 @@ add_action('wp_ajax_nopriv_update_start_price', 'update_start_price_callback');
 
 add_action('wp_ajax_add_auction_to_cart', 'add_auction_to_cart');
 add_action('wp_ajax_nopriv_add_auction_to_cart', 'add_auction_to_cart');
-
 add_action('template_redirect', 'prevent_seller_editing_published_products');
 
-function prevent_seller_editing_published_products() {
-    if ( is_user_logged_in() && dokan_is_seller_dashboard() && isset($_GET['product_id']) ) {
-        $product_id = intval($_GET['product_id']);
-        $bids = get_post_meta( $product_id,'bids',true);
 
-        
-            // Check if the current user is the seller of this product
-            if ( $bids && count( $bids ) > 0) {
-                // اگر کاربر جاری نویسنده محصول نیست
-                wp_die( __('به دلیل داشتن پیشنهاد در محصول شما اجازه ویرایش محصول را ندارید', 'your-text-domain') );
-            }
-        
-    }
+add_action('init', 'register_custom_order_status_sent_moza');
+add_filter('wc_order_statuses', 'add_custom_order_statuses_sent_moza');
 
-    // Add notice after redirect
-}
 
-// Add new columns to the Dokan product list table
-add_filter('dokan_product_listing_columns', 'add_custom_dokan_product_columns');
+// add castume menu to dokan
+add_filter('dokan_query_var_filter','add_castume_menu_to_dokan_moza');
 
-function add_custom_dokan_product_columns($columns) {
-    $columns['new_column1'] = __('New Column 1', 'your-text-domain');
-    $columns['new_column2'] = __('New Column 2', 'your-text-domain');
-    return $columns;
-}
 
-// Display custom column content in Dokan product list table
-add_action('dokan_product_list_table_after_column_content', 'populate_custom_dokan_product_columns', 12, 2);
-
-function populate_custom_dokan_product_columns($column_name, $post) {
-    if ($column_name == 'new_column1') {
-        echo get_post_meta($post->ID, '_new_column1_meta_key', true);
-    }
-
-    if ($column_name == 'new_column2') {
-        echo get_post_meta($post->ID, '_new_column2_meta_key', true);
-    }
-}
-
-// Add custom CSS for admin area (Optional)
-add_action('admin_head', 'custom_admin_styles');
-
-function custom_admin_styles() {
-    echo '<style>
-        .column-new_column1 { width: 10%; }
-        .column-new_column2 { width: 10%; }
-    </style>';
-}
+add_filter( 'dokan_get_dashboard_nav','add_oreder_moza_to_dokan');
+add_action( 'dokan_load_custom_template', 'dokan_load_template_order_moza' );

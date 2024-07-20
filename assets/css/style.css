@@ -161,3 +161,34 @@
         transform: scale(0.98);
     }
 }
+.order-status.status-sent {
+    background: #8e44ad!important;
+    color: white;
+}
+.dokan-label-order-status{
+    background: #8e44ad;
+    color: white; 
+}
+.order-container {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.order-details {
+    display: flex;
+    justify-content: space-between;
+}
+.order-general-info, .order-items {
+    width: 48%;
+}
+.order-general-info p, .order-items table {
+    margin: 10px 0;
+}
+.order-items table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.order-items table th, .order-items table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}

@@ -896,3 +896,66 @@ function update_start_price_callback()
         wp_send_json_error();
     }
 }
+function prevent_seller_editing_published_products() {
+    if ( is_user_logged_in() && dokan_is_seller_dashboard() && isset($_GET['product_id']) ) {
+        $product_id = intval($_GET['product_id']);
+        $bids = get_post_meta( $product_id,'bids',true);
+
+        
+            // Check if the current user is the seller of this product
+            if ( $bids && count( $bids ) > 0) {
+                // اگر کاربر جاری نویسنده محصول نیست
+                wp_die( __('به دلیل داشتن پیشنهاد در محصول شما اجازه ویرایش محصول را ندارید', 'your-text-domain') );
+            }
+        
+    }
+}
+
+
+function register_custom_order_status_sent_moza() {
+    register_post_status('wc-sent', array(
+        'label'                     => 'ارسال',
+        'public'                    => true,
+        'exclude_from_search'       => false,
+        'show_in_admin_all_list'    => true,
+        'show_in_admin_status_list' => true,
+        'label_count'               => _n_noop('ارسال (%s)', 'ارسال (%s)')
+    ));
+}
+function add_custom_order_statuses_sent_moza($order_statuses) {
+    $new_order_statuses = array();
+
+    // وضعیت جدید را به لیست وضعیت‌ها اضافه کنید
+    foreach ($order_statuses as $key => $status) {
+        $new_order_statuses[$key] = $status;
+        if ('wc-processing' === $key) {
+            $new_order_statuses['wc-sent'] = 'ارسال';
+        }
+    }
+
+    return $new_order_statuses;
+}
+
+function add_castume_menu_to_dokan_moza($query_var){
+    $query_var['order_moza']='order_moza';
+    return $query_var;
+}
+
+function add_oreder_moza_to_dokan($url){
+    $url['order_moza']=[
+    'title'=> 'سفارش ها',
+    'icon'  => '<i class="fa fa-shopping-cart"></i>',
+    'url'   => dokan_get_navigation_url( 'order_moza' ),
+    'pos'   => 3
+];
+return $url;
+}
+
+function dokan_load_template_order_moza($query_vars){
+    if ( isset( $query_vars['order_moza'] ) ) {
+        $args['seller_id'] = get_current_user_id();
+        $user_orders = dokan()->order->all( $args );
+        $data = ['user_orders'=>$user_orders];
+        my_plugin_get_template('order_moza.php', $data);
+       }
+}

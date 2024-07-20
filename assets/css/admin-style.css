@@ -10,3 +10,11 @@
 .column-vendor_bids{
     width: 20%;
 }
+.order-status {
+    background: #8e44ad;
+    color: white;
+}
+.dokan-label-order-status{
+    background: #8e44ad;
+    color: white; 
+}
