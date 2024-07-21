@@ -959,3 +959,90 @@ function dokan_load_template_order_moza($query_vars){
         my_plugin_get_template('order_moza.php', $data);
        }
 }
+
+function dokan_get_order_status_translated_moza( $status ) {
+    $translated_order_status = '';
+    switch ( $status ) {
+        case 'completed':
+        case 'wc-completed':
+            $translated_order_status = __( 'Completed', 'dokan-lite' );
+            break;
+
+        case 'pending':
+        case 'wc-pending':
+            $translated_order_status = __( 'Pending Payment', 'dokan-lite' );
+            break;
+
+        case 'on-hold':
+        case 'wc-on-hold':
+            $translated_order_status = __( 'On-hold', 'dokan-lite' );
+            break;
+
+        case 'processing':
+        case 'wc-processing':
+            $translated_order_status = __( 'Processing', 'dokan-lite' );
+            break;
+
+        case 'refunded':
+        case 'wc-refunded':
+            $translated_order_status = __( 'Refunded', 'dokan-lite' );
+            break;
+
+        case 'cancelled':
+        case 'wc-cancelled':
+            $translated_order_status = __( 'Cancelled', 'dokan-lite' );
+            break;
+
+        case 'failed':
+        case 'wc-failed':
+            $translated_order_status = __( 'Failed', 'dokan-lite' );
+            break;
+
+        case 'checkout-draft':
+            $translated_order_status = __( 'Draft', 'dokan-lite' );
+            break;
+        case 'sent':
+            $translated_order_status = __( 'ارسال', 'dokan-lite' );
+            break;
+    }
+
+    return apply_filters( 'dokan_get_order_status_translated', $translated_order_status, $status );
+}
+
+
+function dokan_get_order_status_class_moza( $status ) {
+    $order_status_class = '';
+    switch ( $status ) {
+        case 'completed':
+        case 'wc-completed':
+            $order_status_class = 'success';
+            break;
+
+        case 'pending':
+        case 'wc-pending':
+        case 'failed':
+        case 'wc-failed':
+            $order_status_class = 'danger';
+            break;
+
+        case 'on-hold':
+        case 'wc-on-hold':
+            $order_status_class = 'warning';
+            break;
+
+        case 'processing':
+        case 'sent':
+        case 'wc-processing':
+            $order_status_class = 'info';
+            break;
+        case 'refunded':
+        case 'wc-refunded':
+        case 'cancelled':
+        case 'wc-cancelled':
+        case 'checkout-draft':
+            $order_status_class = 'default';
+            break;
+    }
+
+    return apply_filters( 'dokan_get_order_status_class', $order_status_class, $status );
+}

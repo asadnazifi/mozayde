@@ -56,6 +56,12 @@
              *  @since 2.4
              */
             global $woocommerce;
+            if(isset($_POST['order_id'])){
+                $order_id = $_POST['order_id'];
+                $order = dokan()->order->get( $order_id );
+                $order->update_status( 'wc-sent' );
+                wp_redirect(get_current_url());
+            }
             if (!isset($_GET['order_id'])) {
 
                 if ($user_orders) {
@@ -139,7 +145,7 @@
                                             <?php echo wp_kses_post(wc_price(dokan()->commission->get_earning_by_order($order))); ?>
                                         </td>
                                         <td class="dokan-order-status" data-title="<?php esc_attr_e('Status', 'dokan-lite'); ?>">
-                                            <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class($order->get_status()) . '">' . dokan_get_order_status_translated($order->get_status()) . '</span>'; ?>
+                                            <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class_moza($order->get_status()) . '">' . dokan_get_order_status_translated_moza($order->get_status()) . '</span>'; ?>
                                         </td>
                                         <td class="dokan-order-customer"
                                             data-title="<?php esc_attr_e('Customer', 'dokan-lite'); ?>">
@@ -223,6 +229,10 @@
                                 <p><strong>تلفن:</strong> <?php echo $order->get_billing_phone(); ?></p>
                                 <p><strong>شهر:</strong> <?php echo $order->get_billing_city(); ?></p>
                                 <p><strong>آدرس:</strong> <?php echo $order->get_billing_address_1(); ?></p>
+                                <form action="#" method = "post">
+                                        <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
+                                         <button>ارسال محصول</button>
+                                </form>
                             </div>
                             <div class="order-items">
                                 <h3>موارد سفارش</h3>
@@ -350,6 +360,7 @@
                 }
             }
             ?>
+
 
         </article>
 
