@@ -1046,3 +1046,84 @@ function dokan_get_order_status_class_moza( $status ) {
 
     return apply_filters( 'dokan_get_order_status_class', $order_status_class, $status );
 }
+
+function dokan_order_listing_status_filter_moza() {
+    $status_class  = 'all';
+    $orders_url    = dokan_get_navigation_url( 'order_moza' );
+    $orders_counts = dokan_count_orders( dokan_get_current_user_id() );
+    $total_orders  = $orders_counts->total ?? 0;
+    $filter_nonce  = wp_create_nonce( 'seller-order-filter-nonce' );
+
+    if ( isset( $_GET['seller_order_filter_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_GET['seller_order_filter_nonce'] ) ), 'seller-order-filter-nonce' ) ) {
+        $status_class = isset( $_GET['order_status'] ) ? sanitize_text_field( wp_unslash( $_GET['order_status'] ) ) : $status_class;
+    }
+
+    /**
+     * Filter the list of order statuses to exclude.
+     *
+     * This filter allows developers to modify the array of order statuses that
+     * should be excluded from the displayed list. It is useful for removing
+     * statuses dynamically based on specific conditions or configurations.
+     *
+     * @since 3.10.4
+     *
+     * @param array $exclude_statuses Array of order status slugs to be excluded.
+     */
+    $exclude_statuses = (array) apply_filters( 'dokan_vendor_dashboard_excluded_order_statuses', [ 'wc-checkout-draft' ] );
+
+    // Convert the indexed array to an associative array where the values become keys & Get WooCommerce order statuses.
+    $exclude_statuses  = array_flip( $exclude_statuses );
+    $wc_order_statuses = wc_get_order_statuses();
+
+    // Remove keys from $wc_order_statuses that are found in $exclude_statuses.
+    $filtered_statuses = array_diff_key( $wc_order_statuses, $exclude_statuses );
+
+    // Directly prepend the custom 'All' status to the WooCommerce order statuses.
+    $order_statuses = array_merge( [ 'all' => 'All' ], $filtered_statuses );
+
+    /**
+     * Determine the order listing statuses on the Dokan dashboard.
+     *
+     * This hook allows developers to modify or extend the list of order statuses
+     * used in the order listing on the Dokan vendor dashboard. It can be used to
+     * add new statuses or modify existing ones to customize the dashboard functionality.
+     *
+     * @since 3.10.4
+     *
+     * @param array $order_statuses Array of order statuses with all. Key is the status slug, and value is the display label.
+     */
+    $order_statuses = apply_filters( 'dokan_vendor_dashboard_order_listing_statuses', $order_statuses );
+    ?>
+    <ul class='list-inline order-statuses-filter subsubsub'>
+        <?php foreach ( $order_statuses as $status_key => $status_label ) : ?>
+            <?php
+            $url_args = array(
+                'order_status'              => $status_key,
+                'seller_order_filter_nonce' => $filter_nonce,
+            );
+
+            // Get filtered orders url based on order status.
+            $status_url = add_query_arg( $url_args, $orders_url );
+            ?>
+            <li <?php echo $status_class === $status_key ? 'class="active"' : ''; ?>>
+                <a href="<?php echo esc_url( $status_url ); ?>">
+                    <?php
+                    // Set formatted orders count data based on status.
+                    $status_order_count    = $orders_counts->{$status_key} ?? 0;
+                    $formatted_order_count = $status_key === 'all' ? number_format_i18n( $total_orders ) : number_format_i18n( $status_order_count );
+
+                    /* translators: 1: Order status label 2: Order count */
+                    printf( esc_html__( '%1$s (%2$s)', 'dokan-lite' ), $status_label, $formatted_order_count );
+                    ?>
+                </a>
+            </li>
+        <?php endforeach; ?>
+
+        <?php do_action( 'dokan_status_listing_item', $orders_counts ); ?>
+    </ul>
+    <?php
+}
+function add_count_to_moza($count){
+    $count['wc-sent']=0;
+    return $count;
+}

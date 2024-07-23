@@ -45,3 +45,38 @@ add_filter('dokan_query_var_filter','add_castume_menu_to_dokan_moza');
 
 add_filter( 'dokan_get_dashboard_nav','add_oreder_moza_to_dokan');
 add_action( 'dokan_load_custom_template', 'dokan_load_template_order_moza' );
+
+
+
+// Your additional action button
+add_filter( 'woocommerce_my_account_my_orders_actions', 'add_my_account_my_orders_custom_action', 10, 2 );
+function add_my_account_my_orders_custom_action( $actions, $order ) {
+    if ($order->has_status('sent')){
+        $action_slug = 'specific_name';
+
+        $actions[$action_slug] = array(
+            'url'  => wp_nonce_url( add_query_arg( 'confirm_received', $order->get_id(), home_url('/my-account/') ), 'woocommerce-mark-order-received' ),
+            'name' => 'تایید دریافت محصول',
+        );
+    }
+
+    return $actions;
+}
+ 
+
+add_action( 'template_redirect', 'handle_confirm_received_action' );
+function handle_confirm_received_action() {
+    if ( isset( $_GET['confirm_received'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'woocommerce-mark-order-received' ) ) {
+        $order_id = intval( $_GET['confirm_received'] );
+        $order = wc_get_order( $order_id );
+
+        if ( $order && $order->get_user_id() === get_current_user_id() ) {
+            $order->update_status( 'completed', __( 'محصول توسط مشتری تایید شد.', 'woocommerce' ) );
+            wc_add_notice( __( 'سفارش با موفقیت تکمیل شد.', 'woocommerce' ) );
+            wp_safe_redirect( wc_get_account_endpoint_url( 'orders' ) );
+            exit;
+        }
+    }
+}
+
+add_filter('dokan_order_status_count','add_count_to_moza');

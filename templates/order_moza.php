@@ -59,10 +59,11 @@
             if(isset($_POST['order_id'])){
                 $order_id = $_POST['order_id'];
                 $order = dokan()->order->get( $order_id );
-                $order->update_status( 'wc-sent' );
+                $order->update_status( 'sent' );
                 wp_redirect(get_current_url());
             }
             if (!isset($_GET['order_id'])) {
+                dokan_order_listing_status_filter_moza();
 
                 if ($user_orders) {
                     ?>
