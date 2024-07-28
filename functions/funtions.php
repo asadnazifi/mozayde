@@ -1154,3 +1154,14 @@ function handle_confirm_received_action() {
         }
     }
 }
+
+function remove_wc_prefix_from_text($text) {
+    // استفاده از الگوی منظم برای پیدا کردن و حذف "wc-"
+    $pattern = '/\bwc-([a-zA-Z0-9_]+)/';
+    $replacement = '$1';
+
+    // جایگزینی "wc-" با استفاده از الگوی منظم
+    $result = preg_replace($pattern, $replacement, $text);
+
+    return $result;
+}

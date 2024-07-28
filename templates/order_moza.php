@@ -62,6 +62,8 @@
                 $order->update_status( 'sent' );
                 wp_redirect(get_current_url());
             }
+            $status_class ="all";
+
             if ( isset( $_GET['seller_order_filter_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_GET['seller_order_filter_nonce'] ) ), 'seller-order-filter-nonce' ) ) {
                 $status_class = isset( $_GET['order_status'] ) ? sanitize_text_field( wp_unslash( $_GET['order_status'] ) ) : $status_class;
             }
@@ -93,100 +95,189 @@
                                     /**
                                      * @var WC_Order $order
                                      */
-                                    echo $order->get_status();
                                     ?>
-                                    <?php if($order->get_status()=="sent"):?>
-                                    <tr>
-                                        <th class="dokan-order-select check-column">
-                                            <label for="cb-select-<?php echo esc_attr($order->get_id()); ?>"></label>
-                                            <input class="cb-select-items dokan-checkbox" type="checkbox" name="bulk_orders[]"
-                                                value="<?php echo esc_attr($order->get_id()); ?>">
-                                        </th>
-                                        <td class="dokan-order-id column-primary"
-                                            data-title="<?php esc_attr_e('Order', 'dokan-lite'); ?>">
-                                            <?php if (current_user_can('dokan_view_order')) { ?>
-                                                <?php
-                                                echo '<a href="'
-                                                    . esc_url(wp_nonce_url(add_query_arg(['order_id' => $order->get_id()], dokan_get_navigation_url('order_moza')), 'dokan_view_order'))
-                                                    . '"><strong>'
-                                                    // translators: 1) order number
-                                                    . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number())) . '</strong></a>';
-                                                ?>
-                                            <?php } else { ?>
-                                                <?php
-                                                echo '<strong>'
-                                                    // translators: 1) order number
-                                                    . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number()))
-                                                    . '</strong>';
-                                                ?>
-                                            <?php } ?>
+                                    <?php if($status_class == "all"):?>
+                                            <tr>
+                                                <th class="dokan-order-select check-column">
+                                                    <label for="cb-select-<?php echo esc_attr($order->get_id()); ?>"></label>
+                                                    <input class="cb-select-items dokan-checkbox" type="checkbox" name="bulk_orders[]"
+                                                           value="<?php echo esc_attr($order->get_id()); ?>">
+                                                </th>
+                                                <td class="dokan-order-id column-primary"
+                                                    data-title="<?php esc_attr_e('Order', 'dokan-lite'); ?>">
+                                                    <?php if (current_user_can('dokan_view_order')) { ?>
+                                                        <?php
+                                                        echo '<a href="'
+                                                            . esc_url(wp_nonce_url(add_query_arg(['order_id' => $order->get_id()], dokan_get_navigation_url('order_moza')), 'dokan_view_order'))
+                                                            . '"><strong>'
+                                                            // translators: 1) order number
+                                                            . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number())) . '</strong></a>';
+                                                        ?>
+                                                    <?php } else { ?>
+                                                        <?php
+                                                        echo '<strong>'
+                                                            // translators: 1) order number
+                                                            . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number()))
+                                                            . '</strong>';
+                                                        ?>
+                                                    <?php } ?>
 
-                                            <button type="button" class="toggle-row"></button>
-                                        </td>
-                                        <td class="dokan-order-total"
-                                            data-title="<?php esc_attr_e('Order Total', 'dokan-lite'); ?>">
-                                            <?php echo $order->get_formatted_order_total(); ?>
-                                        </td>
-                                        <td class="dokan-order-earning"
-                                            data-title="<?php esc_attr_e('Earning', 'dokan-lite'); ?>">
-                                            <?php echo wp_kses_post(wc_price(dokan()->commission->get_earning_by_order($order))); ?>
-                                        </td>
-                                        <td class="dokan-order-status" data-title="<?php esc_attr_e('Status', 'dokan-lite'); ?>">
-                                            <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class_moza($order->get_status()) . '">' . dokan_get_order_status_translated_moza($order->get_status()) . '</span>'; ?>
-                                        </td>
-                                        <td class="dokan-order-customer"
-                                            data-title="<?php esc_attr_e('Customer', 'dokan-lite'); ?>">
-                                            <?php
-                                            $customer_full_name = trim($order->get_formatted_billing_full_name());
-                                            $user = empty($customer_full_name) ? __('Guest', 'dokan-lite') : $customer_full_name;
-                                            echo esc_html($user);
-                                            ?>
-                                        </td>
-                                        <td class="dokan-order-date" data-title="<?php esc_attr_e('Date', 'dokan-lite'); ?>">
-                                            <?php
-                                            if ('0000-00-00 00:00:00' === $order->get_date_created()->format('Y-m-d H:i:s')) {
-                                                $t_time = __('Unpublished', 'dokan-lite');
-                                                $h_time = __('Unpublished', 'dokan-lite');
-                                            } else {
-                                                $t_time = $order->get_date_created();
-                                                $time_diff = time() - $t_time->getTimestamp();
+                                                    <button type="button" class="toggle-row"></button>
+                                                </td>
+                                                <td class="dokan-order-total"
+                                                    data-title="<?php esc_attr_e('Order Total', 'dokan-lite'); ?>">
+                                                    <?php echo $order->get_formatted_order_total(); ?>
+                                                </td>
+                                                <td class="dokan-order-earning"
+                                                    data-title="<?php esc_attr_e('Earning', 'dokan-lite'); ?>">
+                                                    <?php echo wp_kses_post(wc_price(dokan()->commission->get_earning_by_order($order))); ?>
+                                                </td>
+                                                <td class="dokan-order-status" data-title="<?php esc_attr_e('Status', 'dokan-lite'); ?>">
+                                                    <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class_moza($order->get_status()) . '">' . dokan_get_order_status_translated_moza($order->get_status()) . '</span>'; ?>
+                                                </td>
+                                                <td class="dokan-order-customer"
+                                                    data-title="<?php esc_attr_e('Customer', 'dokan-lite'); ?>">
+                                                    <?php
+                                                    $customer_full_name = trim($order->get_formatted_billing_full_name());
+                                                    $user = empty($customer_full_name) ? __('Guest', 'dokan-lite') : $customer_full_name;
+                                                    echo esc_html($user);
+                                                    ?>
+                                                </td>
+                                                <td class="dokan-order-date" data-title="<?php esc_attr_e('Date', 'dokan-lite'); ?>">
+                                                    <?php
+                                                    if ('0000-00-00 00:00:00' === $order->get_date_created()->format('Y-m-d H:i:s')) {
+                                                        $t_time = __('Unpublished', 'dokan-lite');
+                                                        $h_time = __('Unpublished', 'dokan-lite');
+                                                    } else {
+                                                        $t_time = $order->get_date_created();
+                                                        $time_diff = time() - $t_time->getTimestamp();
 
-                                                // get human-readable time
-                                                $h_time = $time_diff > 0 && $time_diff < 24 * 60 * 60
-                                                    // translators: 1)  human-readable date
-                                                    ? sprintf(__('%s ago', 'dokan-lite'), human_time_diff($t_time->getTimestamp(), time()))
-                                                    : dokan_format_date($t_time->getTimestamp());
+                                                        // get human-readable time
+                                                        $h_time = $time_diff > 0 && $time_diff < 24 * 60 * 60
+                                                            // translators: 1)  human-readable date
+                                                            ? sprintf(__('%s ago', 'dokan-lite'), human_time_diff($t_time->getTimestamp(), time()))
+                                                            : dokan_format_date($t_time->getTimestamp());
 
-                                                // fix t_time
-                                                $t_time = dokan_format_date($t_time->getTimestamp());
-                                            }
+                                                        // fix t_time
+                                                        $t_time = dokan_format_date($t_time->getTimestamp());
+                                                    }
 
-                                            echo '<abbr title="' . esc_attr($t_time) . '">' . esc_html(apply_filters('post_date_column_time', $h_time, $order->get_id())) . '</abbr>';
-                                            ?>
-                                        </td>
+                                                    echo '<abbr title="' . esc_attr($t_time) . '">' . esc_html(apply_filters('post_date_column_time', $h_time, $order->get_id())) . '</abbr>';
+                                                    ?>
+                                                </td>
 
-                                        <?php do_action('dokan_order_listing_row_before_action_field', $order); ?>
+                                                <?php do_action('dokan_order_listing_row_before_action_field', $order); ?>
 
-                                        <?php if (current_user_can('dokan_manage_order')) { ?>
-                                            <td class="dokan-order-action" width="17%"
-                                                data-title="<?php esc_attr_e('Action', 'dokan-lite'); ?>">
-                                                <?php if($order->get_status()=='processing'):?>
-                                                <form action="#" method = "post">
-                                                     <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
-                                                    <button>ارسال محصول</button>
-                                                 </form>
-                                                 <?php endif;?>                                                 
-                                                 <a href="../order_moza?order_id">جزئیات سفارش</a>
+                                                <?php if (current_user_can('dokan_manage_order')) { ?>
+                                                    <td class="dokan-order-action" width="17%"
+                                                        data-title="<?php esc_attr_e('Action', 'dokan-lite'); ?>">
+                                                        <?php if($order->get_status()=='processing'):?>
+                                                            <form action="#" method = "post">
+                                                                <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
+                                                                <button>ارسال محصول</button>
+                                                            </form>
+                                                        <?php endif;?>
+                                                        <a href="../order_moza?order_id">جزئیات سفارش</a>
 
-                                            </td>
-                                        <?php } ?>
-                                    </tr>
-                                    <?php else:?>
-                                        <div class="dokan-error">
-                                         <?php esc_html_e('No orders found', 'dokan-lite'); ?>
-                                         </div>
-                                    <?php
-                                    endif;
+                                                    </td>
+                                                <?php } ?>
+                                            </tr>
+
+                                        <?php else:
+                                        if($order->get_status()==remove_wc_prefix_from_text($status_class)):?>
+                                            <tr>
+                                                <th class="dokan-order-select check-column">
+                                                    <label for="cb-select-<?php echo esc_attr($order->get_id()); ?>"></label>
+                                                    <input class="cb-select-items dokan-checkbox" type="checkbox" name="bulk_orders[]"
+                                                           value="<?php echo esc_attr($order->get_id()); ?>">
+                                                </th>
+                                                <td class="dokan-order-id column-primary"
+                                                    data-title="<?php esc_attr_e('Order', 'dokan-lite'); ?>">
+                                                    <?php if (current_user_can('dokan_view_order')) { ?>
+                                                        <?php
+                                                        echo '<a href="'
+                                                            . esc_url(wp_nonce_url(add_query_arg(['order_id' => $order->get_id()], dokan_get_navigation_url('order_moza')), 'dokan_view_order'))
+                                                            . '"><strong>'
+                                                            // translators: 1) order number
+                                                            . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number())) . '</strong></a>';
+                                                        ?>
+                                                    <?php } else { ?>
+                                                        <?php
+                                                        echo '<strong>'
+                                                            // translators: 1) order number
+                                                            . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number()))
+                                                            . '</strong>';
+                                                        ?>
+                                                    <?php } ?>
+
+                                                    <button type="button" class="toggle-row"></button>
+                                                </td>
+                                                <td class="dokan-order-total"
+                                                    data-title="<?php esc_attr_e('Order Total', 'dokan-lite'); ?>">
+                                                    <?php echo $order->get_formatted_order_total(); ?>
+                                                </td>
+                                                <td class="dokan-order-earning"
+                                                    data-title="<?php esc_attr_e('Earning', 'dokan-lite'); ?>">
+                                                    <?php echo wp_kses_post(wc_price(dokan()->commission->get_earning_by_order($order))); ?>
+                                                </td>
+                                                <td class="dokan-order-status" data-title="<?php esc_attr_e('Status', 'dokan-lite'); ?>">
+                                                    <?php echo '<span class="dokan-label dokan-label-' . dokan_get_order_status_class_moza($order->get_status()) . '">' . dokan_get_order_status_translated_moza($order->get_status()) . '</span>'; ?>
+                                                </td>
+                                                <td class="dokan-order-customer"
+                                                    data-title="<?php esc_attr_e('Customer', 'dokan-lite'); ?>">
+                                                    <?php
+                                                    $customer_full_name = trim($order->get_formatted_billing_full_name());
+                                                    $user = empty($customer_full_name) ? __('Guest', 'dokan-lite') : $customer_full_name;
+                                                    echo esc_html($user);
+                                                    ?>
+                                                </td>
+                                                <td class="dokan-order-date" data-title="<?php esc_attr_e('Date', 'dokan-lite'); ?>">
+                                                    <?php
+                                                    if ('0000-00-00 00:00:00' === $order->get_date_created()->format('Y-m-d H:i:s')) {
+                                                        $t_time = __('Unpublished', 'dokan-lite');
+                                                        $h_time = __('Unpublished', 'dokan-lite');
+                                                    } else {
+                                                        $t_time = $order->get_date_created();
+                                                        $time_diff = time() - $t_time->getTimestamp();
+
+                                                        // get human-readable time
+                                                        $h_time = $time_diff > 0 && $time_diff < 24 * 60 * 60
+                                                            // translators: 1)  human-readable date
+                                                            ? sprintf(__('%s ago', 'dokan-lite'), human_time_diff($t_time->getTimestamp(), time()))
+                                                            : dokan_format_date($t_time->getTimestamp());
+
+                                                        // fix t_time
+                                                        $t_time = dokan_format_date($t_time->getTimestamp());
+                                                    }
+
+                                                    echo '<abbr title="' . esc_attr($t_time) . '">' . esc_html(apply_filters('post_date_column_time', $h_time, $order->get_id())) . '</abbr>';
+                                                    ?>
+                                                </td>
+
+                                                <?php do_action('dokan_order_listing_row_before_action_field', $order); ?>
+
+                                                <?php if (current_user_can('dokan_manage_order')) { ?>
+                                                    <td class="dokan-order-action" width="17%"
+                                                        data-title="<?php esc_attr_e('Action', 'dokan-lite'); ?>">
+                                                        <?php if($order->get_status()=='processing'):?>
+                                                            <form action="#" method = "post">
+                                                                <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
+                                                                <button>ارسال محصول</button>
+                                                            </form>
+                                                        <?php endif;?>
+                                                        <a href="../order_moza?order_id">جزئیات سفارش</a>
+
+                                                    </td>
+                                                <?php } ?>
+                                            </tr>
+                                        <?php else:?>
+                                            <div class="dokan-error">
+                                                <?php esc_html_e('No orders found', 'dokan-lite'); ?>
+                                            </div>
+                                        <?php
+                                        endif;?>
+
+                                        <?php endif;
 
                                 }
                                 ?>
@@ -224,10 +315,14 @@
                                 <p><strong>تلفن:</strong> <?php echo $order->get_billing_phone(); ?></p>
                                 <p><strong>شهر:</strong> <?php echo $order->get_billing_city(); ?></p>
                                 <p><strong>آدرس:</strong> <?php echo $order->get_billing_address_1(); ?></p>
-                                <form action="#" method = "post">
+                                <?php if($order->get_status()=='processing'):?>
+                                    <form action="#" method = "post">
                                         <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
-                                         <button>ارسال محصول</button>
-                                </form>
+                                        <button>ارسال محصول</button>
+                                    </form>
+                                <?php else:?>
+                                <button>محصول ارسال شده است</button>
+                                <?php endif;?>
                             </div>
                             <div class="order-items">
                                 <h3>موارد سفارش</h3>
