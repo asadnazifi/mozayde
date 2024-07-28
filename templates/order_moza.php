@@ -62,31 +62,15 @@
                 $order->update_status( 'sent' );
                 wp_redirect(get_current_url());
             }
+            if ( isset( $_GET['seller_order_filter_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_GET['seller_order_filter_nonce'] ) ), 'seller-order-filter-nonce' ) ) {
+                $status_class = isset( $_GET['order_status'] ) ? sanitize_text_field( wp_unslash( $_GET['order_status'] ) ) : $status_class;
+            }
             if (!isset($_GET['order_id'])) {
+
                 dokan_order_listing_status_filter_moza();
 
                 if ($user_orders) {
                     ?>
-                    <form id="order-filter" method="POST" class="dokan-form-inline">
-                        <?php if (dokan_get_option('order_status_change', 'dokan_selling', 'on') === 'on') { ?>
-                            <div class="dokan-form-group">
-                                <label for="bulk-order-action-selector"
-                                    class="screen-reader-text"><?php esc_html_e('Select bulk action', 'dokan-lite'); ?></label>
-
-                                <select name="status" id="bulk-order-action-selector" class="dokan-form-control chosen">
-                                    <?php foreach ($bulk_order_statuses as $key => $value) { ?>
-                                        <option class="bulk-order-status" value="<?php echo esc_attr($key); ?>">
-                                            <?php echo esc_attr($value); ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-
-                            <div class="dokan-form-group">
-                                <?php wp_nonce_field('bulk_order_status_change', 'security'); ?>
-                                <input type="submit" name="bulk_order_status_change" id="bulk-order-action"
-                                    class="dokan-btn dokan-btn-theme" value="<?php esc_attr_e('Apply', 'dokan-lite'); ?>">
-                            </div>
-                        <?php } ?>
                         <table class="dokan-table dokan-table-striped">
                             <thead>
                                 <tr>
@@ -109,7 +93,9 @@
                                     /**
                                      * @var WC_Order $order
                                      */
+                                    echo $order->get_status();
                                     ?>
+                                    <?php if($order->get_status()=="sent"):?>
                                     <tr>
                                         <th class="dokan-order-select check-column">
                                             <label for="cb-select-<?php echo esc_attr($order->get_id()); ?>"></label>
@@ -121,7 +107,7 @@
                                             <?php if (current_user_can('dokan_view_order')) { ?>
                                                 <?php
                                                 echo '<a href="'
-                                                    . esc_url(wp_nonce_url(add_query_arg(['order_id' => $order->get_id()], dokan_get_navigation_url('orders')), 'dokan_view_order'))
+                                                    . esc_url(wp_nonce_url(add_query_arg(['order_id' => $order->get_id()], dokan_get_navigation_url('order_moza')), 'dokan_view_order'))
                                                     . '"><strong>'
                                                     // translators: 1) order number
                                                     . sprintf(__('Order %s', 'dokan-lite'), esc_attr($order->get_order_number())) . '</strong></a>';
@@ -184,14 +170,24 @@
                                         <?php if (current_user_can('dokan_manage_order')) { ?>
                                             <td class="dokan-order-action" width="17%"
                                                 data-title="<?php esc_attr_e('Action', 'dokan-lite'); ?>">
-                                                <?php echo $order->get_status(); ?>
-                                                <a href="../order_moza?order_id">جزئیات سفارش</a>
+                                                <?php if($order->get_status()=='processing'):?>
+                                                <form action="#" method = "post">
+                                                     <input type="hidden" name="order_id" value="<?php echo $order->get_id();?>">
+                                                    <button>ارسال محصول</button>
+                                                 </form>
+                                                 <?php endif;?>                                                 
+                                                 <a href="../order_moza?order_id">جزئیات سفارش</a>
 
                                             </td>
                                         <?php } ?>
                                     </tr>
-
+                                    <?php else:?>
+                                        <div class="dokan-error">
+                                         <?php esc_html_e('No orders found', 'dokan-lite'); ?>
+                                         </div>
                                     <?php
+                                    endif;
+
                                 }
                                 ?>
 
@@ -199,8 +195,6 @@
 
                         </table>
                     </form>
-
-
                     <?php
                 } else {
                     ?>
